@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Locatii Table</title>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.25/css/jquery.dataTables.min.css">
+</head>
+<body>
+    <div>
+        <button onclick="sortTable('asc')">Sort Ascending</button>
+        <button onclick="sortTable('desc')">Sort Descending</button>
+    </div>
+
+    <table id="locatiiTable">
+        <thead>
+            <tr>
+                <th>ID_LOCATIE</th>
+                <th>JUDET</th>
+                <th>ORAS</th>
+                <th>STRADA</th>
+                <th>DENUMIRE</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for locatie in locatii_data %}
+                <tr>
+                    <td>{{ locatie.ID_LOCATIE }}</td>
+                    <td>{{ locatie.JUDET }}</td>
+                    <td>{{ locatie.ORAS }}</td>
+                    <td>{{ locatie.STRADA }}</td>
+                    <td>{{ locatie.DENUMIRE }}</td>
+                    <td><button onclick="deleteRow('{{ locatie.ID_LOCATIE }}')">Delete</button></td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
+    <script>
+        let sortOrder = 'asc';
+
+        $(document).ready(function() {
+            initializeDataTable(sortOrder);
+        });
+
+        function initializeDataTable(order) {
+            $('#locatiiTable').DataTable({
+                'ajax': '/locatii_data',
+                'columns': [
+                    {'data': 'ID_LOCATIE'},
+                    {'data': 'JUDET'},
+                    {'data': 'ORAS'},
+                    {'data': 'STRADA'},
+                    {'data': 'DENUMIRE'},
+                    {'data': null, 'defaultContent': '<button class="delete-btn">Delete</button>'}
+                ],
+                'order': [[0, order]]
+            });
+
+            $('#locatiiTable tbody').on('click', 'button.delete-btn', function () {
+                var data = $('#locatiiTable').DataTable().row($(this).parents('tr')).data();
+                deleteRow(data.ID_LOCATIE);
+            });
+        }
+
+        function sortTable(order) {
+            sortOrder = order;
+            $('#locatiiTable').DataTable().destroy();
+            initializeDataTable(sortOrder);
+        }
+
+        function deleteRow(id_locatie) {
+            $.ajax({
+                type: 'POST',
+                url: '/delete_locatie',
+                data: {'id_locatie': id_locatie},
+                success: function(response) {
+                    $('#locatiiTable').DataTable().ajax.reload();
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error deleting row:', error);
+                }
+            });
+        }
+    </script>
+</body>
+</html>
+
+<form method="POST" action="{{ url_for('add_locatie') }}">
+    <label for="id_locatie">ID Locatie:</label>
+    <input type="text" name="id_locatie" required><br>
+    <label for="judet">Judet:</label>
+    <input type="text" name="judet" required><br>
+    <label for="oras">Oras:</label>
+    <input type="text" name="oras" required><br>
+    <label for="strada">Strada:</label>
+    <input type="text" name="strada" required><br>
+    <label for="denumire">Denumire:</label>
+    <input type="text" name="denumire" required><br>
+
+    <button type="submit">Add</button>
+</form>

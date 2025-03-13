@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Rezultatul cererii </title>
+</head>
+<body>
+    <h1>Cerere rezultat <3 :</h1>
+    <table border="1">
+        <thead>
+            <tr>
+                <th>ID Voluntar</th>
+                <th>ID Task</th>
+                <th>ID Proiect</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in results %}
+                <tr>
+                    <td>{{ row[0] }}</td>
+                    <td>{{ row[1] }}</td>
+                    <td>{{ row[2] }}</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</body>
+</html>

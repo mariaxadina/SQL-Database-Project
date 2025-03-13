@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Editii Table</title>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.25/css/jquery.dataTables.min.css">
+</head>
+<body>
+    <div>
+        <button onclick="sortTable('asc')">Sort Ascending</button>
+        <button onclick="sortTable('desc')">Sort Descending</button>
+    </div>
+
+    <table id="editieTable">
+        <thead>
+            <tr>
+                <th>ID_EDITIE</th>
+                <th>ID_PROIECT</th>
+                <th>ID_LOCATIE</th>
+                <th>PM_1</th>
+                <th>PM_2</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for editie in editii_data %}
+                <tr>
+                    <td>{{ editie.ID_EDITIE }}</td>
+                    <td>{{ editie.ID_PROIECT }}</td>
+                    <td>{{ editie.ID_LOCATIE }}</td>
+                    <td>{{ editie.PM_1 }}</td>
+                    <td>{{ editie.PM_2 }}</td>
+                    <td><button onclick="deleteRow('{{ editie.ID_EDITIE }}')">Delete</button></td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
+    <script>
+        let sortOrder = 'asc';
+
+        $(document).ready(function() {
+            initializeDataTable(sortOrder);
+        });
+
+        function initializeDataTable(order) {
+            $('#editieTable').DataTable({
+                'ajax': '/editii_data',  // Specify the route to fetch data
+                'columns': [
+                    {'data': 'ID_EDITIE'},
+                    {'data': 'ID_PROIECT'},
+                    {'data': 'ID_LOCATIE'},
+                    {'data': 'PM_1'},
+                    {'data': 'PM_2'},
+                    {'data': null, 'defaultContent': '<button class="delete-btn">Delete</button>'}
+                ],
+                'order': [[0, order]]
+            });
+
+            $('#editieTable tbody').on('click', 'button.delete-btn', function () {
+                var data = $('#editieTable').DataTable().row($(this).parents('tr')).data();
+                deleteRow(data.ID_EDITIE);
+            });
+        }
+
+        function sortTable(order) {
+            sortOrder = order;
+            $('#editieTable').DataTable().destroy();
+            initializeDataTable(sortOrder);
+        }
+
+        function deleteRow(id_editie) {
+            $.ajax({
+                type: 'POST',
+                url: '/delete_editie',
+                data: {'id_editie': id_editie},
+                success: function(response) {
+                    $('#editieTable').DataTable().ajax.reload();
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error deleting row:', error);
+                }
+            });
+        }
+    </script>
+</body>
+</html>
+
+<form method="POST" action="{{ url_for('add_editie') }}">
+    <label for="id_editie">ID Editie:</label>
+    <input type="text" name="id_editie" required><br>
+    <label for="id_proiect">ID Proiect:</label>
+    <input type="text" name="id_proiect" required><br>
+    <label for="id_locatie">ID Locatie:</label>
+    <input type="text" name="id_locatie" required><br>
+    <label for="pm_1">Project Manager 1:</label>
+    <input type="text" name="pm_1" required><br>
+    <label for="pm_2">Project Manager 2:</label>
+    <input type="text" name="pm_2" required><br>
+
+    <button type="submit">Add Data</button>
+</form>
+

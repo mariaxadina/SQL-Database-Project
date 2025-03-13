@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Departamente Table</title>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.25/css/jquery.dataTables.min.css">
+</head>
+<body>
+    <div>
+        <button onclick="sortTable('asc')">Sort Ascending</button>
+        <button onclick="sortTable('desc')">Sort Descending</button>
+    </div>
+
+    <table id="departamenteTable">
+        <thead>
+            <tr>
+                <th>ID_DEPARTAMENT</th>
+                <th>NUME</th>
+                <th>ID_VOLUNTAR</th>
+                <th>DIRECTOR</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for departament in departamente_data %}
+                <tr>
+                    <td>{{ departament.ID_DEPARTAMENT }}</td>
+                    <td>{{ departament.NUME }}</td>
+                    <td>{{ departament.ID_VOLUNTAR }}</td>
+                    <td>{{ departament.DIRECTOR }}</td>
+                    <td><button onclick="deleteRow('{{ departament.ID_DEPARTAMENT }}')">Delete</button></td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
+    <script>
+        let sortOrder = 'asc';
+
+        $(document).ready(function() {
+            initializeDataTable(sortOrder);
+        });
+
+        function initializeDataTable(order) {
+            $('#departamenteTable').DataTable({
+                'ajax': '/departamente_data',
+                'columns': [
+                    {'data': 'ID_DEPARTAMENT'},
+                    {'data': 'NUME'},
+                    {'data': 'ID_VOLUNTAR'},
+                    {'data': 'DIRECTOR'},
+                    {'data': null, 'defaultContent': '<button class="delete-btn">Delete</button>'}
+                ],
+                'order': [[0, order]]
+            });
+
+            $('#departamenteTable tbody').on('click', 'button.delete-btn', function () {
+                var data = $('#departamenteTable').DataTable().row($(this).parents('tr')).data();
+                deleteRow(data.ID_DEPARTAMENT);
+            });
+        }
+
+        function sortTable(order) {
+            sortOrder = order;
+            $('#departamenteTable').DataTable().destroy();
+            initializeDataTable(sortOrder);
+        }
+
+        function deleteRow(id_departament) {
+            $.ajax({
+                type: 'POST',
+                url: '/delete_departament',
+                data: {'id_departament': id_departament},
+                success: function(response) {
+                    $('#departamenteTable').DataTable().ajax.reload();
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error deleting row:', error);
+                }
+            });
+        }
+    </script>
+</body>
+</html>
+
+<form method="POST" action="{{ url_for('add_departament') }}">
+    <label for="id_departament">ID Departament:</label>
+    <input type="text" name="id_departament" required><br>
+    <label for="nume">Nume:</label>
+    <input type="text" name="nume" required><br>
+    <label for="id_voluntar">ID Voluntar:</label>
+    <input type="text" name="id_voluntar" required><br>
+    <label for="director">Director:</label>
+    <input type="text" name="director" required><br>
+
+    <button type="submit">Add</button>
+</form>

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Voluntari Table</title>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.25/css/jquery.dataTables.min.css">
+</head>
+<body>
+    <div>
+        <button onclick="sortTable('asc')">Sort Ascending</button>
+        <button onclick="sortTable('desc')">Sort Descending</button>
+    </div>
+
+    <table id="voluntariTable">
+        <thead>
+            <tr>
+                <th>ID_VOLUNTAR</th>
+                <th>NUME</th>
+                <th>PRENUME</th>
+                <th>NR_TELEFON</th>
+                <th>DEPARTAMENT</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for voluntar in voluntari_data %}
+                <tr>
+                    <td>{{ voluntar.ID_VOLUNTAR }}</td>
+                    <td>{{ voluntar.NUME }}</td>
+                    <td>{{ voluntar.PRENUME }}</td>
+                    <td>{{ voluntar.NR_TELEFON }}</td>
+                    <td>{{ voluntar.DEPARTAMENT }}</td>
+                    <td><button onclick="deleteRow('{{ voluntar.ID_VOLUNTAR }}')">Delete</button></td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
+    <script>
+        let sortOrder = 'asc';
+
+        $(document).ready(function() {
+            initializeDataTable(sortOrder);
+        });
+
+        function initializeDataTable(order) {
+            $('#voluntariTable').DataTable({
+                'ajax': '/voluntari_data',
+                'columns': [
+                    {'data': 'ID_VOLUNTAR'},
+                    {'data': 'NUME'},
+                    {'data': 'PRENUME'},
+                    {'data': 'NR_TELEFON'},
+                    {'data': 'DEPARTAMENT'},
+                    {'data': null, 'defaultContent': '<button class="delete-btn">Delete</button>'}
+                ],
+                'order': [[0, order]]
+            });
+
+            $('#voluntariTable tbody').on('click', 'button.delete-btn', function () {
+                var data = $('#voluntariTable').DataTable().row($(this).parents('tr')).data();
+                deleteRow(data.ID_VOLUNTAR);
+            });
+        }
+
+        function sortTable(order) {
+            sortOrder = order;
+            $('#voluntariTable').DataTable().destroy();
+            initializeDataTable(sortOrder);
+        }
+
+        function deleteRow(id_voluntar) {
+            $.ajax({
+                type: 'POST',
+                url: '/delete_voluntar',
+                data: {'id_voluntar': id_voluntar},
+                success: function(response) {
+                    $('#voluntariTable').DataTable().ajax.reload();
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error deleting row:', error);
+                }
+            });
+        }
+    </script>
+</body>
+</html>
+
+<form method="POST" action="{{ url_for('add_voluntar') }}">
+    <label for="id_voluntar">ID Voluntar:</label>
+    <input type="text" name="id_voluntar" required><br>
+    <label for="nume">Nume:</label>
+    <input type="text" name="nume" required><br>
+    <label for="prenume">Prenume:</label>
+    <input type="text" name="prenume" required><br>
+    <label for="nr_telefon">Numar de telefon:</label>
+    <input type="text" name="nr_telefon" required><br>
+    <label for="departament">Departament:</label>
+    <input type="text" name="departament" required><br>
+
+    <button type="submit">Add</button>
+</form>

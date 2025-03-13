@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sponsori Table</title>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.25/css/jquery.dataTables.min.css">
+</head>
+<body>
+    <div>
+        <button onclick="sortTable('asc')">Sort Ascending</button>
+        <button onclick="sortTable('desc')">Sort Descending</button>
+    </div>
+
+    <table id="sponsoriTable">
+        <thead>
+            <tr>
+                <th>ID_SPONSOR</th>
+                <th>SPONSOR</th>
+                <th>SUMA</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for sponsor in sponsori_data %}
+                <tr>
+                    <td>{{ sponsor.ID_SPONSOR }}</td>
+                    <td>{{ sponsor.SPONSOR }}</td>
+                    <td>{{ sponsor.SUMA }}</td>
+                    <td><button onclick="deleteRow('{{ sponsor.ID_SPONSOR }}')">Delete</button></td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
+    <script>
+        let sortOrder = 'asc';
+
+        $(document).ready(function() {
+            initializeDataTable(sortOrder);
+        });
+
+        function initializeDataTable(order) {
+            $('#sponsoriTable').DataTable({
+                'ajax': '/sponsori_data',
+                'columns': [
+                    {'data': 'ID_SPONSOR'},
+                    {'data': 'SPONSOR'},
+                    {'data': 'SUMA'},
+                    {'data': null, 'defaultContent': '<button class="delete-btn">Delete</button>'}
+                ],
+                'order': [[0, order]]
+            });
+
+
+            $('#sponsoriTable tbody').on('click', 'button.delete-btn', function () {
+                var data = $('#sponsoriTable').DataTable().row($(this).parents('tr')).data();
+                deleteRow(data.ID_SPONSOR);
+            });
+        }
+
+        function sortTable(order) {
+            sortOrder = order;
+            $('#sponsoriTable').DataTable().destroy();
+            initializeDataTable(sortOrder);
+        }
+
+        function deleteRow(id_sponsor) {
+            $.ajax({
+                type: 'POST',
+                url: '/delete_sponsor',
+                data: {'id_sponsor': id_sponsor},
+                success: function(response) {
+                    $('#sponsoriTable').DataTable().ajax.reload();
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error deleting row:', error);
+                }
+            });
+        }
+    </script>
+</body>
+</html>
+
+<form method="POST" action="{{ url_for('add_sponsor') }}">
+    <label for="id_sponsor">ID Sponsor:</label>
+    <input type="text" name="id_sponsor" required><br>
+    <label for="sponsor">Sponsor:</label>
+    <input type="text" name="sponsor" required><br>
+    <label for="suma">Suma:</label>
+    <input type="text" name="suma" required><br>
+
+    <button type="submit">Add</button>
+</form>

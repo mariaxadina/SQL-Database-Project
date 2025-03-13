@@ -1,0 +1,256 @@
+from flask import Flask, render_template, jsonify
+import cx_Oracle
+import json
+
+app = Flask(__name__)
+
+
+def connect_to_database():
+    connection_details = {
+        'user': 'intro_user',
+        'password': 'mariaadina#22',
+        'dsn': 'localhost:1521/xe'
+    }
+    return cx_Oracle.connect(**connection_details)
+
+#List voluntari
+@app.route('/voluntari')
+def list_voluntari():
+    connection = connect_to_database()
+
+    if connection:
+        cursor = connection.cursor()
+        cursor.execute("SELECT * FROM VOLUNTARI ORDER BY ID_VOLUNTAR")
+        voluntari_data = cursor.fetchall()
+        connection.close()
+        return render_template('list_voluntari_sorted.html', voluntari_data=voluntari_data)
+    else:
+        return "Failed to connect to the database."
+
+#List departments
+@app.route('/departamente')
+def list_departamente():
+    connection = connect_to_database()
+
+    if connection:
+        cursor = connection.cursor()
+        cursor.execute("SELECT * FROM DEPARTAMENTE ORDER BY ID_DEPARTAMENT")
+        departamente_data = cursor.fetchall()
+        connection.close()
+        return render_template('list_departamente_sorted.html', departamente_data=departamente_data)
+    else:
+        return "Failed to connect to the database."
+
+@app.route('/functii')
+def list_functii():
+    connection = connect_to_database()
+
+    if connection:
+        cursor = connection.cursor()
+        cursor.execute("SELECT * FROM FUNCTII ORDER BY ID_FUNCTIE")
+        functii_data = cursor.fetchall()
+        connection.close()
+        return render_template('list_functii_sorted.html', functii_data=functii_data)
+    else:
+        return "Failed to connect to the database."
+
+@app.route('/proiecte')
+def list_proiecte():
+    connection = connect_to_database()
+
+    if connection:
+        cursor = connection.cursor()
+        cursor.execute("SELECT * FROM PROIECTE ORDER BY ID_PROIECT")
+        proiecte_data = cursor.fetchall()
+        connection.close()
+        return render_template('list_proiecte_sorted.html', proiecte_data=proiecte_data)
+    else:
+        return "Failed to connect to the database."
+
+
+
+class Voluntar():
+    def __init__(self):
+        self.ID_VOLUNTAR = None
+        self.NUME = None
+        self.PRENUME = None
+        self.NR_TELEFON = None
+        self.DEPARTAMENT = None
+
+    def to_dict(self):
+        return {
+            'ID_VOLUNTAR': self.ID_VOLUNTAR,
+            'NUME': self.NUME,
+            'PRENUME': self.PRENUME,
+            'NR_TELEFON': self.NR_TELEFON,
+            'DEPARTAMENT': self.DEPARTAMENT
+        }
+
+class Departament():
+    def __init__(self):
+        self.ID_DEPARTAMENT = None
+        self.NUME = None
+        self.ID_VOLUNTAR = None
+        self.DIRECTOR = None
+
+    def to_dict(self):
+        return{
+            'ID_DEPARTAMENT': self.ID_DEPARTAMENT,
+            'NUME': self.NUME,
+            'ID_VOLUNTAR': self.ID_VOLUNTAR,
+            'DIRECTOR': self.DIRECTOR
+        }
+
+class Functie():
+    def __init__(self):
+        self.ID_FUNCTIE = None
+        self.NUME = None
+        self.DURATA = None
+        self.ID_VOLUNTAR = None
+        self.DATA = None
+
+
+    def to_dict(self):
+        return{
+            'ID_FUNCTIE': self.ID_FUNCTIE,
+            'NUME': self.NUME,
+            'DURATA': self.DURATA,
+            'ID_VOLUNTAR': self.ID_VOLUNTAR,
+            'DATA': self.DATA
+        }
+
+class Proiect():
+    def __init__(self):
+        self.ID_PROIECT = None
+        self.NUME = None
+        self.DEPARTAMENT = None
+
+    def to_dict(self):
+        return {
+            'ID_PROIECT': self.ID_PROIECT,
+            'NUME': self.NUME,
+            'DEPARTAMENT': self.DEPARTAMENT
+        }
+
+
+#Endpoint for exposing voluntari to frontend
+@app.route('/voluntari_data')
+def get_voluntari_data():
+    connection = connect_to_database()
+
+    if connection:
+        cursor = connection.cursor()
+        cursor.execute("SELECT * FROM VOLUNTARI ORDER BY ID_VOLUNTAR")
+        voluntari_data = cursor.fetchall()
+        connection.close()
+        print(jsonify(voluntari_data))
+    voluntari_reworked = []
+
+    for i in voluntari_data:
+        # Create an instance of the Voluntar class
+        voluntar_instance = Voluntar()
+
+        # Populate the attributes
+        voluntar_instance.ID_VOLUNTAR = i[0]
+        voluntar_instance.NUME = i[1]
+        voluntar_instance.PRENUME = i[2]
+        voluntar_instance.NR_TELEFON = i[3]
+        voluntar_instance.DEPARTAMENT = i[4]
+        # Convert the object to a dictionary
+        voluntar_dict = voluntar_instance.to_dict()
+
+        # Serialize the dictionary to JSON
+        voluntari_reworked.append(voluntar_dict)
+
+    return jsonify({'data': voluntari_reworked})
+
+@app.route('/departamente_data')
+def get_departamente_data():
+    connection = connect_to_database()
+
+    if connection:
+        cursor = connection.cursor()
+        cursor.execute("SELECT * FROM DEPARTAMENTE ORDER BY ID_DEPARTAMENT")
+        departamente_data = cursor.fetchall()
+        connection.close()
+        print(jsonify(departamente_data))
+    departamente_reworked = []
+
+    for i in departamente_data:
+        departament_instance = Departament()
+
+        # Populate the attributes
+        departament_instance.ID_DEPARTAMENT = i[0]
+        departament_instance.NUME = i[1]
+        departament_instance.ID_VOLUNTAR = i[2]
+        departament_instance.DIRECTOR = i[3]
+
+        # Convert the object to a dictionary
+        departament_dict = departament_instance.to_dict()
+
+        # Serialize the dictionary to JSON
+        departamente_reworked.append(departament_dict)
+
+    return jsonify({'data': departamente_reworked})
+
+@app.route('/functii_data')
+def get_functii_data():
+    connection = connect_to_database()
+
+    if connection:
+        cursor = connection.cursor()
+        cursor.execute("SELECT * FROM FUNCTII ORDER BY ID_FUNCTIE")
+        functii_data = cursor.fetchall()
+        connection.close()
+        print(jsonify(functii_data))
+    functii_reworked = []
+
+    for i in functii_data:
+        # Create an instance of the Voluntar class
+        functie_instance = Functie()
+
+        # Populate the attributes
+        functie_instance.ID_FUNCTIE = i[0]
+        functie_instance.NUME = i[1]
+        functie_instance.DURATA = i[2]
+        functie_instance.ID_VOLUNTAR = i[3]
+        functie_instance.DATA = i[4]
+
+        functie_dict = functie_instance.to_dict()
+
+        # Serialize the dictionary to JSON
+        functii_reworked.append(functie_dict)
+
+    return jsonify({'data': functii_reworked})
+
+@app.route('/proiecte_data')
+def get_proiecte_data():
+    connection = connect_to_database()
+
+    if connection:
+        cursor = connection.cursor()
+        cursor.execute("SELECT * FROM PROIECTE ORDER BY ID_PROIECT")
+        proiecte_data = cursor.fetchall()
+        connection.close()
+        print(jsonify(proiecte_data))
+    proiecte_reworked = []
+
+    for i in proiecte_data:
+        # Create an instance of the Voluntar class
+        proiect_instance = Proiect()
+
+        # Populate the attributes
+        proiect_instance.ID_PROIECT = i[0]
+        proiect_instance.NUME = i[1]
+        proiect_instance.DEPARTAMENT = i[2]
+        # Convert the object to a dictionary
+        proiect_dict = proiect_instance.to_dict()
+
+        # Serialize the dictionary to JSON
+        proiecte_reworked.append(proiect_dict)
+
+    return jsonify({'data': proiecte_reworked})
+
+
+if __name__ == '__main__':
+    app.run(debug=True)

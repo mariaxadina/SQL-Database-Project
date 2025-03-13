@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Sponsor_Proiect Table</title>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.25/css/jquery.dataTables.min.css">
+</head>
+<body>
+    <div>
+        <button onclick="sortTable('asc')">Sort Ascending</button>
+        <button onclick="sortTable('desc')">Sort Descending</button>
+    </div>
+
+    <table id="sponsor_proiectTable">
+        <thead>
+            <tr>
+                <th>ID_SPONSOR_PROIECT</th>
+                <th>ID_SPONSOR</th>
+                <th>ID_PROIECT</th>
+                <th>FINANTARE</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for sponsor_proiect in sponsor_proiect_data %}
+                <tr>
+                    <td>{{ sponsor_proiect.ID_SPONSOR_PROIECT }}</td>
+                    <td>{{ sponsor_proiect.ID_SPONSOR }}</td>
+                    <td>{{ sponsor_proiect.ID_PROIECT }}</td>
+                    <td>{{ sponsor_proiect.FINANTARE }}</td>
+                    <td><button onclick="deleteRow('{{ sponsor_proiect.ID_SPONSOR_PROIECT }}')">Delete</button></td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
+    <script>
+        let sortOrder = 'asc';
+
+        $(document).ready(function() {
+            initializeDataTable(sortOrder);
+        });
+
+        function initializeDataTable(order) {
+            $('#sponsor_proiectTable').DataTable({
+                'ajax': '/sponsor_proiect_data',
+                'columns': [
+                    {'data': 'ID_SPONSOR_PROIECT'},
+                    {'data': 'ID_SPONSOR'},
+                    {'data': 'ID_PROIECT'},
+                    {'data': 'FINANTARE'},
+                    {'data': null, 'defaultContent': '<button class="delete-btn">Delete</button>'}
+                ],
+                'order': [[0, order]]
+            });
+
+            $('#sponsor_proiectTable tbody').on('click', 'button.delete-btn', function () {
+                var data = $('#sponsor_proiectTable').DataTable().row($(this).parents('tr')).data();
+                deleteRow(data.ID_SPONSOR_PROIECT);
+            });
+        }
+
+        function sortTable(order) {
+            sortOrder = order;
+            $('#sponsor_proiectTable').DataTable().destroy();
+            initializeDataTable(sortOrder);
+        }
+
+        function deleteRow(id_sponsor_proiect) {
+            $.ajax({
+                type: 'POST',
+                url: '/delete_sponsor_proiect',
+                data: {'id_sponsor_proiect': id_sponsor_proiect},
+                success: function(response) {
+                    $('#sponsor_proiectTable').DataTable().ajax.reload();
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error deleting row:', error);
+                }
+            });
+        }
+    </script>
+</body>
+</html>
+
+<form method="POST" action="{{ url_for('add_sponsor_proiect') }}">
+    <label for="id_sponsor_proiect">ID Sponsor Proiect:</label>
+    <input type="text" name="id_sponsor_proiect" required><br>
+    <label for="id_sponsor">ID Sponsor:</label>
+    <input type="text" name="id_sponsor" required><br>
+    <label for="id_proiect">ID Proiect:</label>
+    <input type="text" name="id_proiect" required><br>
+    <label for="finantare">Finantare:</label>
+    <input type="text" name="finantare" required><br>
+
+    <button type="submit">Add</button>
+</form>

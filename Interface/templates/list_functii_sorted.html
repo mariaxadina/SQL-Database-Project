@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Functii Table</title>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.25/css/jquery.dataTables.min.css">
+</head>
+<body>
+    <div>
+        <button onclick="sortTable('asc')">Sort Ascending</button>
+        <button onclick="sortTable('desc')">Sort Descending</button>
+    </div>
+
+    <table id="functiiTable">
+        <thead>
+            <tr>
+                <th>ID_FUNCTIE</th>
+                <th>NUME</th>
+                <th>DURATA</th>
+                <th>ID_VOLUNTAR</th>
+                <th>DATA</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for functie in functii_data %}
+                <tr>
+                    <td>{{ functie.ID_FUNCTIE }}</td>
+                    <td>{{ functie.NUME }}</td>
+                    <td>{{ functie.DURATA }}</td>
+                    <td>{{ functie.ID_VOLUNTAR }}</td>
+                    <td>{{ functie.DATA }}</td>
+                    <td><button onclick="deleteRow('{{ functie.ID_FUNCTIE }}')">Delete</button></td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
+    <script>
+        let sortOrder = 'asc';
+
+        $(document).ready(function() {
+            initializeDataTable(sortOrder);
+        });
+
+        function initializeDataTable(order) {
+            $('#functiiTable').DataTable({
+                'ajax': '/functii_data',
+                'columns': [
+                    {'data': 'ID_FUNCTIE'},
+                    {'data': 'NUME'},
+                    {'data': 'DURATA'},
+                    {'data': 'ID_VOLUNTAR'},
+                    {'data': 'DATA'},
+                    {'data': null, 'defaultContent': '<button class="delete-btn">Delete</button>'}
+                ],
+                'order': [[0, order]]
+            });
+
+
+            $('#functiiTable tbody').on('click', 'button.delete-btn', function () {
+                var data = $('#functiiTable').DataTable().row($(this).parents('tr')).data();
+                deleteRow(data.ID_FUNCTIE);
+            });
+        }
+
+        function sortTable(order) {
+            sortOrder = order;
+            $('#functiiTable').DataTable().destroy();
+            initializeDataTable(sortOrder);
+        }
+
+        function deleteRow(id_functie) {
+            $.ajax({
+                type: 'POST',
+                url: '/delete_functie',
+                data: {'id_functie': id_functie},
+                success: function(response) {
+                    $('#functiiTable').DataTable().ajax.reload();
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error deleting row:', error);
+                }
+            });
+        }
+    </script>
+</body>
+</html>
+
+<form method="POST" action="{{ url_for('add_functie') }}">
+    <label for="id_functie">ID Functie:</label>
+    <input type="text" name="id_functie" required><br>
+    <label for="nume">Nume:</label>
+    <input type="text" name="nume" required><br>
+    <label for="durata">Durata:</label>
+    <input type="text" name="durata" required><br>
+    <label for="id_voluntar">ID Voluntar:</label>
+    <input type="text" name="id_voluntar" required><br>
+    <label for="data">Data:</label>
+    <input type="text" name="data" required><br>
+
+    <button type="submit">Add</button>
+</form>

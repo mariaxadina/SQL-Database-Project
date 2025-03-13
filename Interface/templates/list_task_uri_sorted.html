@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Task_uri Table</title>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.25/css/jquery.dataTables.min.css">
+</head>
+<body>
+    <div>
+        <button onclick="sortTable('asc')">Sort Ascending</button>
+        <button onclick="sortTable('desc')">Sort Descending</button>
+    </div>
+
+    <table id="task_uriTable">
+        <thead>
+            <tr>
+                <th>ID_TASK</th>
+                <th>ID_PROIECT</th>
+                <th>DATA</th>
+                <th>DURATA</th>
+                <th>ORA</th>
+                <th>DENUMIRE</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for task_uri in task_uri_data %}
+                <tr>
+                    <td>{{ task_uri.ID_TASK }}</td>
+                    <td>{{ task_uri.ID_PROIECT }}</td>
+                    <td>{{ task_uri.DATA }}</td>
+                    <td>{{ task_uri.DURATA }}</td>
+                    <td>{{ task_uri.ORA }}</td>
+                    <td>{{ task_uri.DENUMIRE }}</td>
+                    <td><button onclick="deleteRow('{{ task_uri.ID_TASK }}')">Delete</button></td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
+    <script>
+        let sortOrder = 'asc';
+
+        $(document).ready(function() {
+            initializeDataTable(sortOrder);
+        });
+
+        function initializeDataTable(order) {
+            $('#task_uriTable').DataTable({
+                'ajax': '/task_uri_data',
+                'columns': [
+                    {'data': 'ID_TASK'},
+                    {'data': 'ID_PROIECT'},
+                    {'data': 'DATA'},
+                    {'data': 'DURATA'},
+                    {'data': 'ORA'},
+                    {'data': 'DENUMIRE'},
+                    {'data': null, 'defaultContent': '<button class="delete-btn">Delete</button>'}
+                ],
+                'order': [[0, order]]
+            });
+
+            $('#task_uriTable tbody').on('click', 'button.delete-btn', function () {
+                var data = $('#task_uriTable').DataTable().row($(this).parents('tr')).data();
+                deleteRow(data.ID_TASK);
+            });
+        }
+
+        function sortTable(order) {
+            sortOrder = order;
+            $('#task_uriTable').DataTable().destroy();
+            initializeDataTable(sortOrder);
+        }
+
+        function deleteRow(id_task) {
+            $.ajax({
+                type: 'POST',
+                url: '/delete_task_uri',
+                data: {'id_task': id_task},
+                success: function(response) {
+                    $('#task_uriTable').DataTable().ajax.reload();
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error deleting row:', error);
+                }
+            });
+        }
+    </script>
+</body>
+</html>
+
+<form method="POST" action="{{ url_for('add_task') }}">
+    <label for="id_task">ID Task:</label>
+    <input type="text" name="id_task" required><br>
+    <label for="id_proiect">ID Proiect:</label>
+    <input type="text" name="id_proiect" required><br>
+    <label for="data">Data:</label>
+    <input type="text" name="data" required><br>
+    <label for="durata">Durata:</label>
+    <input type="text" name="durata" required><br>
+    <label for="ora">Ora:</label>
+    <input type="text" name="ora" required><br>
+    <label for="denumire">Denumire:</label>
+    <input type="text" name="denumire" required><br>
+
+    <button type="submit">Add</button>
+</form>

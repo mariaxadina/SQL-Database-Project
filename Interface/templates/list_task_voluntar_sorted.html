@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Task_Voluntar Table</title>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.10.25/css/jquery.dataTables.min.css">
+</head>
+<body>
+    <div>
+        <button onclick="sortTable('asc')">Sort Ascending</button>
+        <button onclick="sortTable('desc')">Sort Descending</button>
+    </div>
+
+    <table id="task_voluntarTable">
+        <thead>
+            <tr>
+                <th>ID Asociat</th>
+                <th>ID Task</th>
+                <th>ID Voluntar</th>
+                <th>Action</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for task_voluntar in task_voluntar_data %}
+                <tr>
+                    <td>{{ task_voluntar.ID_ASOC }}</td>
+                    <td>{{ task_voluntar.ID_TASK }}</td>
+                    <td>{{ task_voluntar.ID_VOLUNTAR }}</td>
+                    <td><button onclick="deleteRow('{{ task_voluntar.ID_ASOC }}')">Delete</button></td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <script src="https://code.jquery.com/jquery-3.6.4.min.js"></script>
+    <script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
+    <script>
+        let sortOrder = 'asc';
+
+        $(document).ready(function() {
+            initializeDataTable(sortOrder);
+        });
+
+        function initializeDataTable(order) {
+            $('#task_voluntarTable').DataTable({
+                'ajax': '/task_voluntar_data',
+                'columns': [
+                    {'data': 'ID_ASOC'},
+                    {'data': 'ID_TASK'},
+                    {'data': 'ID_VOLUNTAR'},
+                    {'data': null, 'defaultContent': '<button class="delete-btn">Delete</button>'}
+                ],
+                'order': [[0, order]]
+            });
+
+
+            $('#task_voluntarTable tbody').on('click', 'button.delete-btn', function () {
+                var data = $('#task_voluntarTable').DataTable().row($(this).parents('tr')).data();
+                deleteRow(data.ID_ASOC);
+            });
+        }
+
+        function sortTable(order) {
+            sortOrder = order;
+            $('#task_voluntarTable').DataTable().destroy();
+            initializeDataTable(sortOrder);
+        }
+
+        function deleteRow(id_asoc) {
+            $.ajax({
+                type: 'POST',
+                url: '/delete_task_voluntar',
+                data: {'id_asoc': id_asoc},
+                success: function(response) {
+                    $('#task_voluntarTable').DataTable().ajax.reload();
+                },
+                error: function(xhr, status, error) {
+                    console.error('Error deleting row:', error);
+                }
+            });
+        }
+    </script>
+</body>
+</html>
+
+<form method="POST" action="{{ url_for('add_task_voluntar') }}">
+    <label for="id_asoc">ID asociat:</label>
+    <input type="text" name="id_asoc" required><br>
+    <label for="id_task">ID Task:</label>
+    <input type="text" name="id_task" required><br>
+    <label for="id_voluntar">ID Voluntar:</label>
+    <input type="text" name="id_voluntar" required><br>
+
+    <button type="submit">Add</button>
+</form>
