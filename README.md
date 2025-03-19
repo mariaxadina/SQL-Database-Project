@@ -24,5 +24,12 @@ A location can host multiple projects or none.
 A sponsor can fund multiple projects, but at least one project must have a sponsor.
 A project can have multiple sponsors or none (some projects do not require sponsorship).
 
-###
-<p>img src="https://github.com/mariaxadina/Cable-Car-AutoCAD/blob/main/images/1.png" width="300"/></p>
+## Entity-Relationship Diagram (ERD)
+
+<p><img src="https://github.com/mariaxadina/SQL-Database-Project/blob/main/images/1.png" width="100%"/></p>
+
+##  Conceptual Diagram
+
+<p><img src="https://github.com/mariaxadina/SQL-Database-Project/blob/main/images/2.png" width="100%"/></p>
+
+
