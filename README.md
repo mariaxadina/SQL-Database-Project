@@ -32,4 +32,15 @@ A project can have multiple sponsors or none (some projects do not require spons
 
 <p><img src="https://github.com/mariaxadina/SQL-Database-Project/blob/main/images/2.png" width="100%"/></p>
 
+## Interface
+The interface for the database, built with Python and Flask, serves as the bridge between the user and the database, allowing for seamless interaction with the data. Here's a description of the key features:
+
+### Content listing with sorting options (all tables)
+<p><img src="https://github.com/mariaxadina/SQL-Database-Project/blob/main/images/3.png" width="100%"/></p>
+
+### Modify and add information(delete option for each record)
+<p><img src="https://github.com/mariaxadina/SQL-Database-Project/blob/main/images/5.png" width="100%"/></p>
+
+### Displaying the result of a query that retrieves information from at least 3 tables and filters it using at least 2 conditions.
+<p><img src="https://github.com/mariaxadina/SQL-Database-Project/blob/main/images/6.png" width="400px"/></p>
 
