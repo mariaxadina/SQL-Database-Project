@@ -48,3 +48,6 @@ The interface for the database, built with Python and Flask, serves as the bridg
 
 <p><img src="https://github.com/mariaxadina/SQL-Database-Project/blob/main/images/6.png" width="100%"/></p>
 
+## Conclusion
+
+This project successfully demonstrates the creation and management of a relational database system for the Association of Mathematics and Computer Science Students (ASMI). By designing and implementing a structured database, we have ensured efficient tracking of volunteers, projects, tasks, and sponsors. The use of Python and Flask for the interface provides a seamless, user-friendly experience, enabling real-time data interaction, sorting, filtering, and editing functionalities.
